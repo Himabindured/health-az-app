@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Health A-Z</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.30.0/dist/tabler-icons.min.css">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f0f4f8; min-height: 100vh; display: flex; justify-content: center; align-items: flex-start; }
+  .phone { width: 380px; min-height: 100vh; background: #fff; display: flex; flex-direction: column; position: relative; overflow: hidden; }
+
+  /* ── AUTH SCREEN ── */
+  .auth-screen { position: absolute; inset: 0; background: #fff; z-index: 100; display: flex; flex-direction: column; }
+  .auth-screen.hidden { display: none; }
+  .auth-hero { background: #0f6e56; padding: 52px 28px 36px; color: #fff; }
+  .auth-hero h1 { font-size: 28px; font-weight: 800; letter-spacing: -0.5px; }
+  .auth-hero p { font-size: 13px; opacity: 0.8; margin-top: 4px; }
+  .auth-tabs { display: flex; margin-top: 20px; background: rgba(255,255,255,0.15); border-radius: 10px; padding: 3px; }
+  .auth-tab { flex: 1; text-align: center; padding: 8px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; color: rgba(255,255,255,0.7); transition: all 0.2s; }
+  .auth-tab.active { background: #fff; color: #0f6e56; }
+  .auth-body { padding: 28px 24px; flex: 1; }
+  .auth-field { margin-bottom: 14px; }
+  .auth-field label { font-size: 12px; font-weight: 600; color: #6b7280; display: block; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .auth-field input { width: 100%; padding: 12px 14px; border: 1.5px solid #e5e7eb; border-radius: 10px; font-size: 14px; outline: none; transition: border-color 0.2s; }
+  .auth-field input:focus { border-color: #0f6e56; }
+  .auth-btn { width: 100%; background: #0f6e56; color: #fff; border: none; border-radius: 12px; padding: 14px; font-size: 15px; font-weight: 700; cursor: pointer; margin-top: 8px; }
+  .auth-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+  .auth-error { background: #fef2f2; color: #dc2626; border-radius: 8px; padding: 10px 14px; font-size: 13px; margin-bottom: 12px; display: none; }
+  .auth-error.show { display: block; }
+
+  /* ── STATUS BAR ── */
+  .status-bar { background: #0f6e56; color: #fff; padding: 8px 20px 4px; display: flex; justify-content: space-between; font-size: 11px; font-weight: 600; flex-shrink: 0; }
+
+  /* ── APP HEADER ── */
+  .app-header { background: #0f6e56; color: #fff; padding: 12px 20px 20px; flex-shrink: 0; }
+  .app-header-row { display: flex; justify-content: space-between; align-items: flex-start; }
+  .app-header h1 { font-size: 22px; font-weight: 700; letter-spacing: -0.5px; }
+  .app-header p { font-size: 12px; opacity: 0.8; margin-top: 2px; }
+  .logout-btn { background: rgba(255,255,255,0.2); border: none; color: #fff; border-radius: 8px; padding: 5px 10px; font-size: 11px; cursor: pointer; font-weight: 600; }
+  .search-box { margin-top: 12px; background: rgba(255,255,255,0.18); border-radius: 12px; display: flex; align-items: center; padding: 10px 14px; gap: 8px; }
+  .search-box i { font-size: 18px; color: rgba(255,255,255,0.8); }
+  .search-box input { background: transparent; border: none; outline: none; color: #fff; font-size: 14px; flex: 1; }
+  .search-box input::placeholder { color: rgba(255,255,255,0.65); }
+
+  /* ── NAV TABS ── */
+  .nav-tabs { display: flex; border-bottom: 1px solid #e8edf2; background: #fff; flex-shrink: 0; }
+  .nav-tab { flex: 1; padding: 12px 6px; text-align: center; font-size: 11px; color: #888; cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.2s; font-weight: 500; }
+  .nav-tab.active { color: #0f6e56; border-bottom-color: #0f6e56; }
+  .nav-tab i { display: block; font-size: 18px; margin-bottom: 2px; }
+
+  /* ── CONTENT ── */
+  .content { flex: 1; overflow-y: auto; padding: 16px; }
+
+  /* ── CATEGORY CARDS ── */
+  .category-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+  .cat-card { border-radius: 14px; padding: 16px 14px; cursor: pointer; transition: transform 0.15s; }
+  .cat-card:active { transform: scale(0.97); }
+  .cat-card i { font-size: 26px; margin-bottom: 8px; }
+  .cat-card h3 { font-size: 13px; font-weight: 600; margin-bottom: 2px; }
+  .cat-card p { font-size: 11px; opacity: 0.75; }
+  .cat-heart { background: #fef2f2; color: #dc2626; }
+  .cat-brain { background: #f0f4ff; color: #4f46e5; }
+  .cat-lungs { background: #f0fdf4; color: #16a34a; }
+  .cat-bone { background: #fff7ed; color: #ea580c; }
+  .cat-skin { background: #fdf4ff; color: #9333ea; }
+  .cat-digest { background: #fffbeb; color: #d97706; }
+
+  /* ── A-Z LIST ── */
+  .az-header { font-size: 12px; font-weight: 700; color: #0f6e56; text-transform: uppercase; letter-spacing: 1px; padding: 12px 4px 6px; }
+  .az-item { display: flex; align-items: center; padding: 12px 8px; border-bottom: 0.5px solid #f0f4f8; cursor: pointer; gap: 12px; }
+  .az-item:hover { background: #f7faf9; }
+  .az-dot { width: 8px; height: 8px; border-radius: 50%; background: #0f6e56; flex-shrink: 0; }
+  .az-item-info h4 { font-size: 14px; font-weight: 500; color: #1a2e28; }
+  .az-item-info p { font-size: 11px; color: #6b7280; margin-top: 1px; }
+  .az-item-arrow { margin-left: auto; color: #bbb; font-size: 16px; }
+  .loading-list { text-align: center; padding: 32px; color: #9ca3af; font-size: 14px; }
+
+  /* ── DETAIL VIEW ── */
+  .detail-view { display: none; position: absolute; inset: 0; background: #fff; overflow-y: auto; z-index: 10; }
+  .detail-view.open { display: block; }
+  .detail-header { background: #0f6e56; color: #fff; padding: 44px 20px 24px; position: relative; }
+  .back-btn { position: absolute; top: 14px; left: 14px; width: 34px; height: 34px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; border: none; color: #fff; font-size: 18px; }
+  .detail-header h2 { font-size: 24px; font-weight: 700; margin-top: 8px; }
+  .detail-header .badge { display: inline-block; background: rgba(255,255,255,0.2); font-size: 11px; padding: 3px 10px; border-radius: 20px; margin-top: 6px; }
+  .detail-body { padding: 20px; }
+  .detail-section { margin-bottom: 20px; }
+  .detail-section h3 { font-size: 14px; font-weight: 700; color: #0f6e56; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; }
+  .detail-section p { font-size: 14px; line-height: 1.7; color: #374151; }
+  .symptom-tag { display: inline-block; background: #e8f5f0; color: #0f6e56; font-size: 12px; padding: 4px 10px; border-radius: 20px; margin: 3px 3px 3px 0; font-weight: 500; }
+  .severity-bar { display: flex; gap: 4px; margin-top: 8px; }
+  .sev-dot { width: 28px; height: 8px; border-radius: 4px; background: #e5e7eb; }
+  .sev-dot.filled-low { background: #22c55e; }
+  .sev-dot.filled-med { background: #f59e0b; }
+  .sev-dot.filled-high { background: #ef4444; }
+
+  /* ── AI SECTION ── */
+  .ai-section { margin-top: 8px; background: #f0fdf9; border-radius: 14px; padding: 16px; border: 1px solid #d1fae5; }
+  .ai-section h3 { font-size: 13px; font-weight: 700; color: #0f6e56; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+  .ai-input-row { display: flex; gap: 8px; margin-bottom: 12px; }
+  .ai-input-row input { flex: 1; padding: 9px 12px; border-radius: 10px; border: 1px solid #d1fae5; font-size: 13px; outline: none; background: #fff; color: #1a2e28; }
+  .ai-input-row button { background: #0f6e56; color: #fff; border: none; border-radius: 10px; padding: 9px 14px; font-size: 13px; cursor: pointer; font-weight: 600; }
+  .ai-response { font-size: 13px; line-height: 1.7; color: #374151; background: #fff; border-radius: 10px; padding: 12px; border: 1px solid #d1fae5; min-height: 48px; white-space: pre-wrap; }
+  .ai-loading { color: #0f6e56; opacity: 0.7; font-style: italic; }
+
+  /* ── VITALS ── */
+  .vitals-card { background: #f8fffe; border-radius: 14px; border: 1px solid #d1fae5; padding: 16px; margin-bottom: 14px; }
+  .vitals-card h3 { font-size: 14px; font-weight: 700; color: #0f6e56; margin-bottom: 12px; }
+  .vital-row { display: flex; align-items: center; justify-content: space-between; padding: 8px 0; border-bottom: 0.5px solid #e8f5f0; }
+  .vital-row:last-child { border-bottom: none; }
+  .vital-label { font-size: 13px; color: #4b5563; display: flex; align-items: center; gap: 8px; }
+  .vital-label i { color: #0f6e56; font-size: 16px; }
+  .vital-val { font-size: 13px; font-weight: 600; color: #1a2e28; }
+  .vital-val input[type=number] { width: 64px; padding: 4px 8px; border: 1px solid #d1fae5; border-radius: 8px; font-size: 13px; text-align: center; outline: none; }
+  .check-btn { width: 100%; margin-top: 12px; background: #0f6e56; color: #fff; border: none; border-radius: 10px; padding: 11px; font-size: 14px; font-weight: 600; cursor: pointer; }
+  .check-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+  .vital-result { margin-top: 12px; padding: 10px 14px; border-radius: 10px; font-size: 13px; font-weight: 500; line-height: 1.5; }
+
+  /* ── VITALS HISTORY ── */
+  .history-section { margin-top: 4px; }
+  .history-section h3 { font-size: 15px; font-weight: 700; color: #1a2e28; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; }
+  .history-item { background: #f8fffe; border: 1px solid #d1fae5; border-radius: 12px; padding: 12px 14px; margin-bottom: 8px; position: relative; }
+  .history-item-date { font-size: 11px; color: #9ca3af; margin-bottom: 6px; }
+  .history-item-vitals { display: flex; flex-wrap: wrap; gap: 8px; }
+  .hv-pill { background: #e8f5f0; color: #0f6e56; font-size: 11px; padding: 3px 8px; border-radius: 20px; font-weight: 600; }
+  .history-delete { position: absolute; top: 10px; right: 10px; background: none; border: none; color: #e5e7eb; cursor: pointer; font-size: 16px; }
+  .history-delete:hover { color: #ef4444; }
+  .history-empty { text-align: center; padding: 20px; color: #9ca3af; font-size: 13px; }
+  .login-prompt { background: #f0fdf9; border: 1px solid #d1fae5; border-radius: 12px; padding: 16px; text-align: center; margin-top: 8px; }
+  .login-prompt p { font-size: 13px; color: #6b7280; margin-bottom: 10px; }
+  .login-prompt button { background: #0f6e56; color: #fff; border: none; border-radius: 8px; padding: 8px 20px; font-size: 13px; font-weight: 600; cursor: pointer; }
+
+  /* ── BOTTOM NAV ── */
+  .bottom-nav { display: flex; background: #fff; border-top: 0.5px solid #e8edf2; padding: 8px 0 16px; flex-shrink: 0; }
+  .bnav-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; cursor: pointer; color: #9ca3af; font-size: 10px; font-weight: 500; }
+  .bnav-item i { font-size: 22px; }
+  .bnav-item.active { color: #0f6e56; }
+
+  .section-label { font-size: 16px; font-weight: 700; color: #1a2e28; margin-bottom: 14px; }
+  .toast { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); background: #1a2e28; color: #fff; padding: 10px 20px; border-radius: 20px; font-size: 13px; font-weight: 500; opacity: 0; transition: opacity 0.3s; z-index: 999; pointer-events: none; white-space: nowrap; }
+  .toast.show { opacity: 1; }
+</style>
+</head>
+<body>
+<div class="phone" id="app">
+
+  <!-- ══ AUTH SCREEN ══ -->
+  <div class="auth-screen" id="auth-screen">
+    <div class="auth-hero">
+      <h1>Health A–Z</h1>
+      <p>Trusted health info for patients & doctors</p>
+      <div class="auth-tabs">
+        <div class="auth-tab active" id="tab-login-btn" onclick="showAuthTab('login')">Login</div>
+        <div class="auth-tab" id="tab-register-btn" onclick="showAuthTab('register')">Register</div>
+      </div>
+    </div>
+    <div class="auth-body">
+      <div class="auth-error" id="auth-error"></div>
+
+      <!-- Login Form -->
+      <div id="login-form">
+        <div class="auth-field"><label>Email</label><input type="email" id="login-email" placeholder="you@example.com"></div>
+        <div class="auth-field"><label>Password</label><input type="password" id="login-password" placeholder="Your password"></div>
+        <button class="auth-btn" id="login-btn" onclick="doLogin()">Login</button>
+        <p style="text-align:center;margin-top:16px;font-size:12px;color:#9ca3af;">Don't have an account? <span style="color:#0f6e56;cursor:pointer;font-weight:600" onclick="showAuthTab('register')">Register</span></p>
+      </div>
+
+      <!-- Register Form -->
+      <div id="register-form" style="display:none;">
+        <div class="auth-field"><label>Full Name</label><input type="text" id="reg-name" placeholder="Your name"></div>
+        <div class="auth-field"><label>Email</label><input type="email" id="reg-email" placeholder="you@example.com"></div>
+        <div class="auth-field"><label>Password</label><input type="password" id="reg-password" placeholder="Min 6 characters"></div>
+        <button class="auth-btn" id="register-btn" onclick="doRegister()">Create Account</button>
+        <p style="text-align:center;margin-top:16px;font-size:12px;color:#9ca3af;">Already have an account? <span style="color:#0f6e56;cursor:pointer;font-weight:600" onclick="showAuthTab('login')">Login</span></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ MAIN APP ══ -->
+  <div class="status-bar">
+    <span id="status-time">9:41 AM</span>
+    <span>Health A–Z</span>
+    <span>100%</span>
+  </div>
+
+  <div class="app-header">
+    <div class="app-header-row">
+      <div>
+        <h1>Health A–Z</h1>
+        <p id="user-greeting">Trusted health info</p>
+      </div>
+      <button class="logout-btn" onclick="doLogout()"><i class="ti ti-logout" style="vertical-align:-2px"></i> Logout</button>
+    </div>
+    <div class="search-box">
+      <i class="ti ti-search"></i>
+      <input type="text" placeholder="Search conditions, symptoms…" id="globalSearch">
+    </div>
+  </div>
+
+  <div class="nav-tabs">
+    <div class="nav-tab active" onclick="switchTab('home', this)"><i class="ti ti-home"></i>Home</div>
+    <div class="nav-tab" onclick="switchTab('az', this)"><i class="ti ti-list-letters"></i>A–Z List</div>
+    <div class="nav-tab" onclick="switchTab('vitals', this)"><i class="ti ti-heartbeat"></i>Vitals</div>
+    <div class="nav-tab" onclick="switchTab('ask', this)"><i class="ti ti-brain"></i>Ask AI</div>
+  </div>
+
+  <div class="content" id="content">
+
+    <!-- HOME TAB -->
+    <div id="tab-home">
+      <div class="section-label">Browse by category</div>
+      <div class="category-grid">
+        <div class="cat-card cat-heart" onclick="showCategory('Cardiovascular')"><i class="ti ti-heart-filled"></i><h3>Heart & Blood</h3><p>Cardiovascular</p></div>
+        <div class="cat-card cat-brain" onclick="showCategory('Neurological')"><i class="ti ti-brain"></i><h3>Brain & Nerves</h3><p>Neurological</p></div>
+        <div class="cat-card cat-lungs" onclick="showCategory('Respiratory')"><i class="ti ti-lungs"></i><h3>Lungs & Airways</h3><p>Respiratory</p></div>
+        <div class="cat-card cat-bone" onclick="showCategory('Musculoskeletal')"><i class="ti ti-bone"></i><h3>Bones & Joints</h3><p>Musculoskeletal</p></div>
+        <div class="cat-card cat-skin" onclick="showCategory('Dermatological')"><i class="ti ti-shield"></i><h3>Skin & Hair</h3><p>Dermatological</p></div>
+        <div class="cat-card cat-digest" onclick="showCategory('Digestive')"><i class="ti ti-activity"></i><h3>Digestive</h3><p>Digestive</p></div>
+      </div>
+      <div class="section-label">Common conditions</div>
+      <div id="common-conditions"><div class="loading-list"><i class="ti ti-loader-2"></i> Loading…</div></div>
+    </div>
+
+    <!-- A-Z TAB -->
+    <div id="tab-az" style="display:none;">
+      <div id="az-list"><div class="loading-list"><i class="ti ti-loader-2"></i> Loading…</div></div>
+    </div>
+
+    <!-- VITALS TAB -->
+    <div id="tab-vitals" style="display:none;">
+      <div class="vitals-card">
+        <h3><i class="ti ti-stethoscope" style="font-size:18px;vertical-align:-3px;margin-right:6px;color:#0f6e56"></i>Quick Vitals Check</h3>
+        <div class="vital-row"><span class="vital-label"><i class="ti ti-heart"></i> Heart Rate</span><span class="vital-val"><input type="number" id="v-hr" placeholder="72" min="30" max="220"> bpm</span></div>
+        <div class="vital-row"><span class="vital-label"><i class="ti ti-droplet"></i> Blood Pressure</span><span class="vital-val"><input type="number" id="v-sys" placeholder="120" min="60" max="220" style="width:52px"> / <input type="number" id="v-dia" placeholder="80" min="40" max="150" style="width:52px"></span></div>
+        <div class="vital-row"><span class="vital-label"><i class="ti ti-temperature"></i> Temperature</span><span class="vital-val"><input type="number" id="v-temp" placeholder="37" min="34" max="42" step="0.1"> °C</span></div>
+        <div class="vital-row"><span class="vital-label"><i class="ti ti-lungs"></i> O₂ Saturation</span><span class="vital-val"><input type="number" id="v-spo2" placeholder="98" min="70" max="100"> %</span></div>
+        <button class="check-btn" id="vitals-save-btn" onclick="checkAndSaveVitals()"><i class="ti ti-clipboard-check" style="vertical-align:-2px;margin-right:6px"></i>Analyse & Save Vitals</button>
+        <div id="vital-result" class="vital-result" style="display:none;"></div>
+      </div>
+      <div class="history-section">
+        <h3>Vitals History <span style="font-size:12px;color:#9ca3af;font-weight:400" id="history-count"></span></h3>
+        <div id="vitals-history"><div class="loading-list">Loading history…</div></div>
+      </div>
+      <div style="font-size:11px;color:#9ca3af;text-align:center;padding:8px 8px 0;">⚠ For informational purposes only. Consult a healthcare professional for medical advice.</div>
+    </div>
+
+    <!-- ASK AI TAB -->
+    <div id="tab-ask" style="display:none;">
+      <div class="ai-section" style="margin-bottom:16px;">
+        <h3><i class="ti ti-sparkles" style="font-size:16px"></i> Ask the Health Assistant</h3>
+        <div class="ai-input-row">
+          <input type="text" id="ask-input" placeholder="e.g. What causes migraines?" onkeydown="if(event.key==='Enter')askAI()">
+          <button onclick="askAI()">Ask</button>
+        </div>
+        <div class="ai-response" id="ask-response">Ask any health question and get a clear, informative answer.</div>
+      </div>
+      <div style="font-size:11px;color:#9ca3af;text-align:center;padding:0 8px;">⚠ General health information only — not a substitute for professional medical advice.</div>
+    </div>
+
+  </div>
+
+  <div class="bottom-nav">
+    <div class="bnav-item active" onclick="switchTab('home',null,this)"><i class="ti ti-home"></i>Home</div>
+    <div class="bnav-item" onclick="switchTab('az',null,this)"><i class="ti ti-list-letters"></i>A–Z</div>
+    <div class="bnav-item" onclick="switchTab('vitals',null,this)"><i class="ti ti-heartbeat"></i>Vitals</div>
+    <div class="bnav-item" onclick="switchTab('ask',null,this)"><i class="ti ti-brain"></i>Ask AI</div>
+  </div>
+
+  <!-- Detail overlay -->
+  <div class="detail-view" id="detail-view">
+    <div class="detail-header">
+      <button class="back-btn" onclick="closeDetail()"><i class="ti ti-arrow-left"></i></button>
+      <div class="badge" id="detail-category">Category</div>
+      <h2 id="detail-title">Condition</h2>
+    </div>
+    <div class="detail-body">
+      <div class="detail-section"><h3>Overview</h3><p id="detail-overview"></p></div>
+      <div class="detail-section"><h3>Common symptoms</h3><div id="detail-symptoms"></div></div>
+      <div class="detail-section"><h3>Severity</h3><div id="detail-severity"></div></div>
+      <div class="detail-section"><h3>Treatment options</h3><p id="detail-treatment"></p></div>
+      <div class="ai-section">
+        <h3><i class="ti ti-sparkles" style="font-size:16px"></i> Ask about this condition</h3>
+        <div class="ai-input-row">
+          <input type="text" id="detail-ask-input" placeholder="Ask a specific question…" onkeydown="if(event.key==='Enter')askDetailAI()">
+          <button onclick="askDetailAI()">Ask</button>
+        </div>
+        <div class="ai-response" id="detail-ask-response">Ask anything about this condition.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+</div>
+
+<script>
+// ══ CONFIG ══
+const API = window.location.origin === "null" ? "http://localhost:8000" : window.location.origin;
+
+// ══ STATE ══
+let token = localStorage.getItem('haz_token') || null;
+let currentUser = JSON.parse(localStorage.getItem('haz_user') || 'null');
+let allConditions = [];
+
+// ══ INIT ══
+window.onload = () => {
+  updateClock();
+  setInterval(updateClock, 1000);
+  if (token && currentUser) {
+    showApp();
+  } else {
+    document.getElementById('auth-screen').classList.remove('hidden');
+  }
+};
+
+function updateClock() {
+  const now = new Date();
+  document.getElementById('status-time').textContent =
+    now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+}
+
+// ══ AUTH ══
+function showAuthTab(tab) {
+  document.getElementById('login-form').style.display = tab === 'login' ? 'block' : 'none';
+  document.getElementById('register-form').style.display = tab === 'register' ? 'block' : 'none';
+  document.getElementById('tab-login-btn').classList.toggle('active', tab === 'login');
+  document.getElementById('tab-register-btn').classList.toggle('active', tab === 'register');
+  document.getElementById('auth-error').classList.remove('show');
+}
+
+async function doLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  const password = document.getElementById('login-password').value;
+  if (!email || !password) return showAuthError('Please fill in all fields.');
+  const btn = document.getElementById('login-btn');
+  btn.disabled = true; btn.textContent = 'Logging in…';
+  try {
+    const res = await fetch(`${API}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || 'Login failed');
+    token = data.access_token;
+    localStorage.setItem('haz_token', token);
+    await fetchCurrentUser();
+    showApp();
+  } catch (e) {
+    showAuthError(e.message);
+  } finally {
+    btn.disabled = false; btn.textContent = 'Login';
+  }
+}
+
+async function doRegister() {
+  const name = document.getElementById('reg-name').value.trim();
+  const email = document.getElementById('reg-email').value.trim();
+  const password = document.getElementById('reg-password').value;
+  if (!name || !email || !password) return showAuthError('Please fill in all fields.');
+  if (password.length < 6) return showAuthError('Password must be at least 6 characters.');
+  const btn = document.getElementById('register-btn');
+  btn.disabled = true; btn.textContent = 'Creating account…';
+  try {
+    const res = await fetch(`${API}/auth/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, email, password })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || 'Registration failed');
+    showToast('Account created! Please login.');
+    showAuthTab('login');
+    document.getElementById('login-email').value = email;
+  } catch (e) {
+    showAuthError(e.message);
+  } finally {
+    btn.disabled = false; btn.textContent = 'Create Account';
+  }
+}
+
+function doLogout() {
+  token = null; currentUser = null;
+  localStorage.removeItem('haz_token');
+  localStorage.removeItem('haz_user');
+  document.getElementById('auth-screen').classList.remove('hidden');
+  allConditions = [];
+}
+
+async function fetchCurrentUser() {
+  const res = await fetch(`${API}/users/me`, { headers: authHeaders() });
+  currentUser = await res.json();
+  localStorage.setItem('haz_user', JSON.stringify(currentUser));
+}
+
+function showApp() {
+  document.getElementById('auth-screen').classList.add('hidden');
+  document.getElementById('user-greeting').textContent = `Welcome, ${currentUser?.name || 'there'} 👋`;
+  loadConditions();
+  loadVitalsHistory();
+}
+
+function showAuthError(msg) {
+  const el = document.getElementById('auth-error');
+  el.textContent = msg; el.classList.add('show');
+}
+
+function authHeaders() {
+  return { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` };
+}
+
+// ══ CONDITIONS FROM BACKEND ══
+async function loadConditions() {
+  try {
+    const res = await fetch(`${API}/conditions/`);
+    allConditions = await res.json();
+    renderCommon();
+    renderAZ();
+  } catch (e) {
+    document.getElementById('common-conditions').innerHTML =
+      '<div class="loading-list" style="color:#ef4444">⚠ Could not load conditions. Is the backend running?</div>';
+  }
+}
+
+function conditionItem(c) {
+  const safeC = JSON.stringify(c).replace(/'/g, "&#39;");
+  return `<div class="az-item" onclick='showDetail(${safeC})'>
+    <div class="az-dot"></div>
+    <div class="az-item-info"><h4>${c.name}</h4><p>${c.category || c.cat}</p></div>
+    <i class="ti ti-chevron-right az-item-arrow"></i>
+  </div>`;
+}
+
+function renderCommon() {
+  const common = allConditions.slice(0, 6);
+  document.getElementById('common-conditions').innerHTML = common.map(conditionItem).join('');
+}
+
+function renderAZ() {
+  const sorted = [...allConditions].sort((a, b) => a.name.localeCompare(b.name));
+  const letters = {};
+  sorted.forEach(c => { const l = c.name[0]; if (!letters[l]) letters[l] = []; letters[l].push(c); });
+  document.getElementById('az-list').innerHTML = Object.entries(letters)
+    .map(([l, conds]) => `<div class="az-header">${l}</div>` + conds.map(conditionItem).join('')).join('');
+}
+
+function showCategory(cat) {
+  const matches = allConditions.filter(c => (c.category || c.cat) === cat);
+  document.getElementById('tab-az').innerHTML =
+    `<div class="section-label" style="color:#0f6e56">${cat} Conditions</div>` + matches.map(conditionItem).join('');
+  switchTab('az');
+}
+
+// ══ DETAIL VIEW ══
+function showDetail(c) {
+  document.getElementById('detail-title').textContent = c.name;
+  document.getElementById('detail-category').textContent = c.category || c.cat;
+  document.getElementById('detail-overview').textContent = c.overview;
+  document.getElementById('detail-symptoms').innerHTML =
+    c.symptoms.map(s => `<span class="symptom-tag">${s}</span>`).join('');
+  const sevLabels = ['', 'Mild', 'Moderate', 'Severe'];
+  const colors = ['', '#22c55e', '#f59e0b', '#ef4444'];
+  const classes = ['', 'filled-low', 'filled-med', 'filled-high'];
+  document.getElementById('detail-severity').innerHTML =
+    `<div class="severity-bar">${[1,2,3].map(i =>
+      `<div class="sev-dot ${i<=c.severity ? classes[c.severity] : ''}"></div>`).join('')}</div>
+    <p style="font-size:12px;color:${colors[c.severity]};font-weight:600;margin-top:4px;">${sevLabels[c.severity]}</p>`;
+  document.getElementById('detail-treatment').textContent = c.treatment;
+  document.getElementById('detail-ask-response').textContent = `Ask anything about ${c.name}.`;
+  document.getElementById('detail-ask-input').setAttribute('data-condition', c.name);
+  document.getElementById('detail-view').classList.add('open');
+}
+
+function closeDetail() { document.getElementById('detail-view').classList.remove('open'); }
+
+// ══ GLOBAL SEARCH ══
+document.getElementById('globalSearch').addEventListener('input', function () {
+  const q = this.value.toLowerCase().trim();
+  if (!q) { renderAZ(); switchTab('az'); return; }
+  const matches = allConditions.filter(c =>
+    c.name.toLowerCase().includes(q) ||
+    c.symptoms.some(s => s.toLowerCase().includes(q)) ||
+    (c.category || c.cat || '').toLowerCase().includes(q)
+  );
+  document.getElementById('tab-az').innerHTML = matches.length
+    ? `<div class="az-header">Results for "${this.value}"</div>` + matches.map(conditionItem).join('')
+    : `<div style="padding:24px;text-align:center;color:#9ca3af;font-size:14px;">No results for "${this.value}"</div>`;
+  switchTab('az');
+});
+
+// ══ VITALS CHECK + SAVE TO BACKEND ══
+async function checkAndSaveVitals() {
+  const hr   = parseFloat(document.getElementById('v-hr').value) || null;
+  const sys  = parseFloat(document.getElementById('v-sys').value) || null;
+  const dia  = parseFloat(document.getElementById('v-dia').value) || null;
+  const temp = parseFloat(document.getElementById('v-temp').value) || null;
+  const spo2 = parseFloat(document.getElementById('v-spo2').value) || null;
+
+  // ── analyse ──
+  const issues = []; let status = 'normal';
+  if (hr) {
+    if (hr < 60) issues.push('Heart rate is low (bradycardia).');
+    else if (hr > 100) { issues.push('Heart rate is elevated (tachycardia).'); status = 'warn'; }
+  }
+  if (sys && dia) {
+    if (sys >= 180 || dia >= 120) { issues.push('Blood pressure critically high — seek immediate care!'); status = 'crit'; }
+    else if (sys >= 140 || dia >= 90) { issues.push('Blood pressure is high (Stage 2 hypertension).'); status = 'warn'; }
+    else if (sys < 90) { issues.push('Blood pressure is low (hypotension).'); status = 'warn'; }
+  }
+  if (temp) {
+    if (temp >= 38.5) { issues.push(`Fever detected (${temp}°C).`); if (status === 'normal') status = 'warn'; }
+    else if (temp < 36) { issues.push('Temperature below normal.'); if (status === 'normal') status = 'warn'; }
+  }
+  if (spo2 && spo2 < 95) { issues.push('O₂ saturation is low — consider supplemental oxygen.'); status = 'crit'; }
+
+  const r = document.getElementById('vital-result');
+  r.style.display = 'block';
+  const colors = { normal: ['#f0fdf4','#16a34a'], warn: ['#fffbeb','#d97706'], crit: ['#fef2f2','#dc2626'] };
+  const icons  = { normal: 'ti-circle-check', warn: 'ti-alert-triangle', crit: 'ti-alert-circle' };
+  const msgs   = { normal: 'All vitals within normal range!', warn: 'Some readings need attention.', crit: 'Critical values — seek medical help immediately.' };
+  r.style.background = colors[status][0]; r.style.color = colors[status][1];
+  r.innerHTML = `<i class="ti ${icons[status]}" style="font-size:16px;vertical-align:-2px;margin-right:6px"></i><strong>${msgs[status]}</strong>${issues.length ? '<br>• ' + issues.join('<br>• ') : ''}`;
+
+  // ── save to backend ──
+  const btn = document.getElementById('vitals-save-btn');
+  btn.disabled = true; btn.textContent = 'Saving…';
+  try {
+    const res = await fetch(`${API}/vitals/`, {
+      method: 'POST',
+      headers: authHeaders(),
+      body: JSON.stringify({ heart_rate: hr, systolic_bp: sys, diastolic_bp: dia, temperature: temp, spo2 })
+    });
+    if (!res.ok) throw new Error('Save failed');
+    showToast('✅ Vitals saved!');
+    loadVitalsHistory();
+  } catch (e) {
+    showToast('⚠ Could not save — is backend running?');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="ti ti-clipboard-check" style="vertical-align:-2px;margin-right:6px"></i>Analyse & Save Vitals';
+  }
+}
+
+// ══ VITALS HISTORY FROM BACKEND ══
+async function loadVitalsHistory() {
+  const el = document.getElementById('vitals-history');
+  try {
+    const res = await fetch(`${API}/vitals/`, { headers: authHeaders() });
+    if (!res.ok) throw new Error('Unauthorised');
+    const records = await res.json();
+    document.getElementById('history-count').textContent = records.length ? `(${records.length})` : '';
+    if (!records.length) {
+      el.innerHTML = '<div class="history-empty">No vitals saved yet. Enter your vitals above and click Analyse & Save!</div>';
+      return;
+    }
+    el.innerHTML = records.map(r => {
+      const pills = [];
+      if (r.heart_rate) pills.push(`❤️ ${r.heart_rate} bpm`);
+      if (r.systolic_bp && r.diastolic_bp) pills.push(`🩸 ${r.systolic_bp}/${r.diastolic_bp} mmHg`);
+      if (r.temperature) pills.push(`🌡 ${r.temperature}°C`);
+      if (r.spo2) pills.push(`💨 SpO₂ ${r.spo2}%`);
+      const date = new Date(r.recorded_at).toLocaleString();
+      return `<div class="history-item">
+        <div class="history-item-date">${date}</div>
+        <div class="history-item-vitals">${pills.map(p => `<span class="hv-pill">${p}</span>`).join('')}</div>
+        <button class="history-delete" onclick="deleteVital(${r.id})"><i class="ti ti-trash"></i></button>
+      </div>`;
+    }).join('');
+  } catch (e) {
+    el.innerHTML = '<div class="history-empty" style="color:#ef4444">Could not load history.</div>';
+  }
+}
+
+async function deleteVital(id) {
+  try {
+    await fetch(`${API}/vitals/${id}`, { method: 'DELETE', headers: authHeaders() });
+    showToast('Deleted');
+    loadVitalsHistory();
+  } catch (e) { showToast('Delete failed'); }
+}
+
+// ══ ASK AI ══
+async function askAI() {
+  const q = document.getElementById('ask-input').value.trim();
+  if (!q) return;
+  const resp = document.getElementById('ask-response');
+  resp.textContent = 'Thinking…'; resp.className = 'ai-response ai-loading';
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514', max_tokens: 1000,
+        system: 'You are a knowledgeable health information assistant. Provide clear, accurate, evidence-based information. Always recommend consulting a qualified healthcare professional. Keep answers concise (3–5 sentences).',
+        messages: [{ role: 'user', content: q }]
+      })
+    });
+    const data = await res.json();
+    resp.textContent = data.content?.[0]?.text || 'No response received.';
+    resp.className = 'ai-response';
+  } catch (e) { resp.textContent = 'Unable to get a response.'; resp.className = 'ai-response'; }
+}
+
+async function askDetailAI() {
+  const input = document.getElementById('detail-ask-input');
+  const q = input.value.trim();
+  const condition = input.getAttribute('data-condition');
+  if (!q) return;
+  const resp = document.getElementById('detail-ask-response');
+  resp.textContent = 'Thinking…'; resp.className = 'ai-response ai-loading';
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514', max_tokens: 1000,
+        system: `You are a health assistant. The user is reading about "${condition}". Answer their question specifically about this condition concisely (3–5 sentences). Always recommend consulting a healthcare professional.`,
+        messages: [{ role: 'user', content: q }]
+      })
+    });
+    const data = await res.json();
+    resp.textContent = data.content?.[0]?.text || 'No response received.';
+    resp.className = 'ai-response';
+  } catch (e) { resp.textContent = 'Unable to get a response.'; resp.className = 'ai-response'; }
+}
+
+// ══ TAB SWITCHING ══
+function switchTab(tab, tabEl, bottomEl) {
+  ['home','az','vitals','ask'].forEach(t => {
+    document.getElementById('tab-' + t).style.display = t === tab ? 'block' : 'none';
+  });
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.bnav-item').forEach(b => b.classList.remove('active'));
+  const idx = ['home','az','vitals','ask'].indexOf(tab);
+  document.querySelectorAll('.nav-tab')[idx]?.classList.add('active');
+  document.querySelectorAll('.bnav-item')[idx]?.classList.add('active');
+  if (tab === 'vitals') loadVitalsHistory();
+}
+
+// ══ TOAST ══
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+</script>
+</body>
+</html>
